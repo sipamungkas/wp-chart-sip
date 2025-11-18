@@ -151,3 +151,226 @@
 	padding: 40px 20px;
 	color: #666;
 }
+
+/* Tab Interface */
+.wcsp-tabs {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 20px;
+	border-bottom: 1px solid #ddd;
+}
+
+.wcsp-tab-button {
+	background: transparent;
+	border: none;
+	padding: 12px 20px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	color: #555;
+	border-bottom: 3px solid transparent;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.wcsp-tab-button:hover {
+	color: #2271b1;
+	background: #f0f6fc;
+}
+
+.wcsp-tab-button.active {
+	color: #2271b1;
+	border-bottom-color: #2271b1;
+	background: #f0f6fc;
+}
+
+.wcsp-tab-button .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+}
+
+.wcsp-tab-content {
+	display: none;
+	padding: 20px 0;
+}
+
+.wcsp-tab-content.active {
+	display: block;
+}
+
+/* GUI Mode Styling */
+.wcsp-gui-section {
+	background: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.wcsp-gui-section h4 {
+	margin-top: 0;
+	margin-bottom: 15px;
+	color: #1d2327;
+	font-size: 15px;
+}
+
+.wcsp-gui-section .description {
+	margin-bottom: 15px;
+	color: #666;
+}
+
+/* Series Rows */
+#wcsp-series-container {
+	margin-bottom: 15px;
+}
+
+.wcsp-series-row {
+	background: white;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 15px;
+	margin-bottom: 12px;
+	position: relative;
+}
+
+.wcsp-series-fields {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.wcsp-series-field {
+	flex: 1;
+}
+
+.wcsp-series-data-field {
+	flex: 2;
+}
+
+.wcsp-series-field label {
+	display: block;
+	margin-bottom: 6px;
+	font-weight: 600;
+	font-size: 13px;
+	color: #1d2327;
+}
+
+.wcsp-series-field input {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	font-size: 14px;
+}
+
+.wcsp-series-field input:focus {
+	border-color: #2271b1;
+	outline: none;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+.wcsp-remove-series {
+	background: #dc3232;
+	color: white;
+	border: none;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background 0.2s ease;
+	align-self: flex-end;
+	flex-shrink: 0;
+}
+
+.wcsp-remove-series:hover {
+	background: #b32d2e;
+}
+
+.wcsp-remove-series .dashicons {
+	color: white;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+#wcsp-add-series {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+#wcsp-add-series .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+/* Preview Button Styling */
+#wcsp_preview_chart {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 16px;
+}
+
+#wcsp_preview_chart .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+}
+
+/* Loading State */
+.wcsp-loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 40px;
+	color: #666;
+	font-size: 14px;
+}
+
+.wcsp-loading .spinner {
+	float: none;
+	margin-right: 10px;
+}
+
+/* Error Messages */
+.wcsp-error {
+	background: #fcf0f1;
+	border-left: 4px solid #dc3232;
+	padding: 12px;
+	margin: 10px 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 782px) {
+	.wcsp-series-fields {
+		flex-direction: column;
+	}
+
+	.wcsp-series-field,
+	.wcsp-series-data-field {
+		flex: 1;
+	}
+
+	.wcsp-remove-series {
+		align-self: flex-start;
+	}
+
+	.wcsp-tabs {
+		flex-direction: column;
+		gap: 0;
+	}
+
+	.wcsp-tab-button {
+		border-bottom: 1px solid #ddd;
+		border-left: 3px solid transparent;
+	}
+
+	.wcsp-tab-button.active {
+		border-left-color: #2271b1;
+		border-bottom-color: #ddd;
+	}
+}

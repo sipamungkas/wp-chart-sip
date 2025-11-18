@@ -159,20 +159,20 @@ class WCSP_Admin {
 		if ( in_array( $hook, array( 'post.php', 'post-new.php' ) ) ) {
 			// Enqueue on chart edit screen
 			if ( $post_type === 'wcsp_chart' ) {
-				wp_enqueue_script(
-					'wcsp-admin',
-					WCSP_PLUGIN_URL . 'admin/js/wcsp-admin.js',
-					array( 'jquery' ),
-					WCSP_VERSION,
-					true
-				);
-
-				// Add ApexCharts for preview
+				// Add ApexCharts for preview (must load before our admin script)
 				wp_enqueue_script(
 					'apexcharts',
 					'https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js',
 					array(),
 					'3.45.1',
+					true
+				);
+
+				wp_enqueue_script(
+					'wcsp-admin',
+					WCSP_PLUGIN_URL . 'admin/js/wcsp-admin.js',
+					array( 'jquery', 'apexcharts' ),
+					WCSP_VERSION,
 					true
 				);
 

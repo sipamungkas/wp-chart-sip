@@ -5,6 +5,9 @@
 (function($) {
 	'use strict';
 
+	// Store chart instance globally to manage it properly
+	var chartInstance = null;
+
 	$(document).ready(function() {
 		// Chart preview functionality
 		$('#wcsp_preview_chart').on('click', function(e) {
@@ -30,6 +33,41 @@
 				// Invalid JSON, don't format
 			}
 		});
+
+		// Tab switching functionality
+		$('.wcsp-tab-button').on('click', function() {
+			var tab = $(this).data('tab');
+			$('.wcsp-tab-button').removeClass('active');
+			$(this).addClass('active');
+			$('.wcsp-tab-content').removeClass('active');
+			$('#wcsp-tab-' + tab).addClass('active');
+		});
+
+		// Add series button
+		$('#wcsp-add-series').on('click', function() {
+			addSeriesRow();
+		});
+
+		// Initialize with one series row if container is empty
+		if ($('#wcsp-series-container').children().length === 0) {
+			addSeriesRow();
+			// Try to load existing JSON data into GUI
+			loadJsonToGui();
+		}
+
+		// Convert GUI to JSON before preview in GUI mode
+		$('#wcsp_preview_chart').on('click', function() {
+			if ($('#wcsp-tab-gui').hasClass('active')) {
+				convertGuiToJson();
+			}
+		});
+
+		// Convert GUI to JSON before saving
+		$('form#post').on('submit', function() {
+			if ($('#wcsp-tab-gui').hasClass('active')) {
+				convertGuiToJson();
+			}
+		});
 	});
 
 	/**
@@ -40,14 +78,20 @@
 		var chartData = $('#wcsp_chart_data').val();
 		var chartOptions = $('#wcsp_chart_options').val();
 
+		// Show preview container
+		$('#wcsp_chart_preview').show();
+
+		// Show loading state
+		$('#wcsp_preview_container').html('<div class="wcsp-loading"><span class="spinner is-active"></span> Loading chart...</div>');
+
 		// Validate inputs
 		if (!chartType) {
-			alert('Please select a chart type.');
+			$('#wcsp_preview_container').html('<div class="notice notice-error inline"><p>Please select a chart type.</p></div>');
 			return;
 		}
 
 		if (!chartData) {
-			alert('Please enter chart data.');
+			$('#wcsp_preview_container').html('<div class="notice notice-error inline"><p>Please enter chart data.</p></div>');
 			return;
 		}
 
@@ -56,7 +100,7 @@
 		try {
 			data = JSON.parse(chartData);
 		} catch (e) {
-			alert('Invalid JSON in chart data: ' + e.message);
+			$('#wcsp_preview_container').html('<div class="notice notice-error inline"><p><strong>Invalid JSON in chart data:</strong> ' + e.message + '</p></div>');
 			return;
 		}
 
@@ -64,7 +108,7 @@
 			try {
 				options = JSON.parse(chartOptions);
 			} catch (e) {
-				alert('Invalid JSON in chart options: ' + e.message);
+				$('#wcsp_preview_container').html('<div class="notice notice-error inline"><p><strong>Invalid JSON in chart options:</strong> ' + e.message + '</p></div>');
 				return;
 			}
 		} else {
@@ -93,18 +137,35 @@
 		// Merge custom options
 		config = mergeDeep(config, options);
 
-		// Show preview container
-		$('#wcsp_chart_preview').show();
+		// Destroy previous chart instance if exists
+		if (chartInstance !== null) {
+			try {
+				chartInstance.destroy();
+				chartInstance = null;
+			} catch (e) {
+				console.error('Error destroying chart instance:', e);
+			}
+		}
 
-		// Clear previous chart
+		// Clear container
 		$('#wcsp_preview_container').empty();
 
-		// Render chart
-		if (typeof ApexCharts !== 'undefined') {
-			var chart = new ApexCharts(document.querySelector("#wcsp_preview_container"), config);
-			chart.render();
-		} else {
-			$('#wcsp_preview_container').html('<p>ApexCharts library not loaded. Please refresh the page.</p>');
+		// Render chart with error handling
+		try {
+			if (typeof ApexCharts !== 'undefined') {
+				chartInstance = new ApexCharts(document.querySelector("#wcsp_preview_container"), config);
+				chartInstance.render().catch(function(error) {
+					console.error('Chart rendering error:', error);
+					$('#wcsp_preview_container').html('<div class="notice notice-error inline"><p><strong>Error rendering chart:</strong> ' + error.message + '</p></div>');
+					chartInstance = null;
+				});
+			} else {
+				$('#wcsp_preview_container').html('<div class="notice notice-error inline"><p>ApexCharts library not loaded. Please refresh the page.</p></div>');
+			}
+		} catch (e) {
+			console.error('Chart initialization error:', e);
+			$('#wcsp_preview_container').html('<div class="notice notice-error inline"><p><strong>Error initializing chart:</strong> ' + e.message + '</p></div>');
+			chartInstance = null;
 		}
 	}
 
@@ -231,6 +292,201 @@
 	 */
 	function isObject(item) {
 		return item && typeof item === 'object' && !Array.isArray(item);
+	}
+
+	/**
+	 * Add a new series row in GUI mode
+	 */
+	var seriesCounter = 0;
+	function addSeriesRow(name, data) {
+		seriesCounter++;
+		name = name || 'Series ' + seriesCounter;
+		data = data || '';
+
+		var html = '<div class="wcsp-series-row" data-index="' + seriesCounter + '">' +
+			'<div class="wcsp-series-fields">' +
+			'<div class="wcsp-series-field">' +
+			'<label>Series Name:</label>' +
+			'<input type="text" class="wcsp-series-name" value="' + escapeHtml(name) + '" placeholder="e.g., Sales">' +
+			'</div>' +
+			'<div class="wcsp-series-field wcsp-series-data-field">' +
+			'<label>Data Values:</label>' +
+			'<input type="text" class="wcsp-series-data" value="' + escapeHtml(data) + '" placeholder="e.g., 30, 40, 35, 50, 49, 60">' +
+			'</div>' +
+			'<button type="button" class="button wcsp-remove-series" title="Remove Series">' +
+			'<span class="dashicons dashicons-no-alt"></span>' +
+			'</button>' +
+			'</div>' +
+			'</div>';
+
+		$('#wcsp-series-container').append(html);
+
+		// Bind remove event
+		$('.wcsp-remove-series').off('click').on('click', function() {
+			if ($('.wcsp-series-row').length > 1) {
+				$(this).closest('.wcsp-series-row').remove();
+			} else {
+				alert('You must have at least one data series.');
+			}
+		});
+	}
+
+	/**
+	 * Convert GUI inputs to JSON format
+	 */
+	function convertGuiToJson() {
+		var chartType = $('#wcsp_chart_type').val();
+		var series = [];
+		var categories = [];
+		var labels = [];
+
+		// Get series data
+		$('.wcsp-series-row').each(function() {
+			var name = $(this).find('.wcsp-series-name').val().trim();
+			var dataStr = $(this).find('.wcsp-series-data').val().trim();
+
+			if (dataStr) {
+				// Parse data values
+				var dataValues = dataStr.split(',').map(function(v) {
+					var num = parseFloat(v.trim());
+					return isNaN(num) ? 0 : num;
+				});
+
+				// For pie/donut charts, series format is different
+				if (chartType === 'pie' || chartType === 'donut') {
+					series.push(dataValues);
+				} else {
+					series.push({
+						name: name || 'Series',
+						data: dataValues
+					});
+				}
+			}
+		});
+
+		// Get categories/labels
+		var categoriesStr = $('#wcsp-gui-categories').val().trim();
+		if (categoriesStr) {
+			if (chartType === 'pie' || chartType === 'donut') {
+				labels = categoriesStr.split(',').map(function(v) { return v.trim(); });
+			} else {
+				categories = categoriesStr.split(',').map(function(v) { return v.trim(); });
+			}
+		}
+
+		// Build data object
+		var chartData = { series: series };
+		if (categories.length > 0) {
+			chartData.categories = categories;
+		}
+		if (labels.length > 0) {
+			chartData.labels = labels;
+		}
+
+		// Get styling options
+		var options = {};
+		var title = $('#wcsp-gui-title').val().trim();
+		var colorsStr = $('#wcsp-gui-colors').val().trim();
+		var height = $('#wcsp-gui-height').val();
+
+		if (title) {
+			options.title = {
+				text: title,
+				align: 'left'
+			};
+		}
+
+		if (colorsStr) {
+			options.colors = colorsStr.split(',').map(function(v) { return v.trim(); });
+		}
+
+		if (height && height != 350) {
+			if (!options.chart) options.chart = {};
+			options.chart.height = parseInt(height);
+		}
+
+		// Update JSON fields
+		$('#wcsp_chart_data').val(JSON.stringify(chartData, null, 2));
+		$('#wcsp_chart_options').val(JSON.stringify(options, null, 2));
+	}
+
+	/**
+	 * Load existing JSON data into GUI fields
+	 */
+	function loadJsonToGui() {
+		try {
+			var chartData = $('#wcsp_chart_data').val().trim();
+			var chartOptions = $('#wcsp_chart_options').val().trim();
+
+			if (!chartData) return;
+
+			var data = JSON.parse(chartData);
+			var options = chartOptions ? JSON.parse(chartOptions) : {};
+			var chartType = $('#wcsp_chart_type').val();
+
+			// Clear existing series
+			$('#wcsp-series-container').empty();
+			seriesCounter = 0;
+
+			// Load series
+			if (data.series && data.series.length > 0) {
+				data.series.forEach(function(seriesItem) {
+					if (chartType === 'pie' || chartType === 'donut') {
+						// For pie/donut, series is just an array of numbers
+						if (Array.isArray(seriesItem)) {
+							addSeriesRow('Values', seriesItem.join(', '));
+						} else {
+							addSeriesRow('Values', seriesItem);
+						}
+					} else {
+						// For other charts, series has name and data
+						var name = seriesItem.name || 'Series';
+						var dataStr = Array.isArray(seriesItem.data) ? seriesItem.data.join(', ') : '';
+						addSeriesRow(name, dataStr);
+					}
+				});
+			}
+
+			// Load categories or labels
+			if (data.categories) {
+				$('#wcsp-gui-categories').val(data.categories.join(', '));
+			} else if (data.labels) {
+				$('#wcsp-gui-categories').val(data.labels.join(', '));
+			}
+
+			// Load options
+			if (options.title && options.title.text) {
+				$('#wcsp-gui-title').val(options.title.text);
+			}
+
+			if (options.colors && options.colors.length > 0) {
+				$('#wcsp-gui-colors').val(options.colors.join(', '));
+			}
+
+			if (options.chart && options.chart.height) {
+				$('#wcsp-gui-height').val(options.chart.height);
+			}
+		} catch (e) {
+			console.log('Could not load JSON to GUI:', e);
+			// If JSON is invalid, just initialize with empty series
+			if ($('#wcsp-series-container').children().length === 0) {
+				addSeriesRow();
+			}
+		}
+	}
+
+	/**
+	 * Escape HTML to prevent XSS
+	 */
+	function escapeHtml(text) {
+		var map = {
+			'&': '&amp;',
+			'<': '&lt;',
+			'>': '&gt;',
+			'"': '&quot;',
+			"'": '&#039;'
+		};
+		return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
 	}
 
 })(jQuery);
