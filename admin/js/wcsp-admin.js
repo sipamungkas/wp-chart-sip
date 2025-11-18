@@ -501,8 +501,8 @@
 			var chartType = $('#wcsp_chart_type').val();
 
 			// Validate data structure
-			if (!data.series) {
-				console.warn('Invalid chart data: missing series');
+			if (!data.series || !Array.isArray(data.series)) {
+				console.warn('Invalid chart data: missing or invalid series');
 				if ($('#wcsp-series-container').children().length === 0) {
 					addSeriesRow();
 				}
@@ -513,29 +513,25 @@
 			$('#wcsp-series-container').empty();
 			// Note: seriesCounter is NOT reset - we use timestamp-based indices now
 
-			// Load series
+			// Load series - detect format from data structure
 			if (data.series && data.series.length > 0) {
-				if (chartType === 'pie' || chartType === 'donut') {
-					// For pie/donut, series is a flat array of numbers
-					// data.series = [44, 55, 13, 33]
-					if (Array.isArray(data.series) && typeof data.series[0] === 'number') {
-						addSeriesRow('Values', data.series.join(', '));
-					} else {
-						// Fallback for unexpected format
-						console.warn('Unexpected series format for pie/donut chart');
-						addSeriesRow('Values', '');
-					}
+				// Detect if this is a flat array (pie/donut format) or array of objects (other charts)
+				var isFlatArray = typeof data.series[0] === 'number';
+
+				if (isFlatArray) {
+					// Flat array format: [44, 55, 13, 33] - used for pie/donut charts
+					addSeriesRow('Values', data.series.join(', '));
+				} else if (typeof data.series[0] === 'object' && data.series[0] !== null) {
+					// Array of objects format: [{name: "Sales", data: [30, 40, 50]}]
+					data.series.forEach(function(seriesItem) {
+						var name = seriesItem.name || 'Series';
+						var dataStr = Array.isArray(seriesItem.data) ? seriesItem.data.join(', ') : '';
+						addSeriesRow(name, dataStr);
+					});
 				} else {
-					// For other charts, series is an array of objects with name and data
-					if (Array.isArray(data.series)) {
-						data.series.forEach(function(seriesItem) {
-							if (seriesItem && typeof seriesItem === 'object') {
-								var name = seriesItem.name || 'Series';
-								var dataStr = Array.isArray(seriesItem.data) ? seriesItem.data.join(', ') : '';
-								addSeriesRow(name, dataStr);
-							}
-						});
-					}
+					// Unexpected format
+					console.warn('Unexpected series format:', data.series);
+					addSeriesRow();
 				}
 			}
 
