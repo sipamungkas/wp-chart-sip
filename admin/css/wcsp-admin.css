@@ -344,39 +344,69 @@
 	margin: 10px 0;
 }
 
-/* Color Template Selector */
-#wcsp-color-template {
-	margin-bottom: 10px;
+/* Validation States */
+.wcsp-invalid {
+	border-color: #dc3232 !important;
+	background: #fff0f0 !important;
+	box-shadow: 0 0 0 1px #dc3232 !important;
 }
 
-#wcsp-template-preview {
-	background: #f9f9f9;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	padding: 12px;
+.wcsp-validation-message {
+	display: block;
+	color: #dc3232;
+	font-size: 12px;
+	margin-top: 4px;
+	font-weight: 500;
 }
 
-.wcsp-color-swatches {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
+/* Disabled States */
+#wcsp-add-series.wcsp-disabled,
+#wcsp-add-series:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	background: #f6f7f7;
+	border-color: #dcdcde;
+	color: #a7aaad;
 }
 
-.wcsp-color-swatch {
-	width: 40px;
-	height: 40px;
-	border-radius: 4px;
-	border: 2px solid #fff;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	cursor: pointer;
-	transition: transform 0.2s ease, box-shadow 0.2s ease;
-	display: inline-block;
+#wcsp-add-series.wcsp-disabled:hover,
+#wcsp-add-series:disabled:hover {
+	background: #f6f7f7;
+	border-color: #dcdcde;
+	color: #a7aaad;
 }
 
-.wcsp-color-swatch:hover {
-	transform: scale(1.1);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-	border-color: #2271b1;
+.wcsp-disabled-hint {
+	color: #666;
+	font-style: italic;
+	font-size: 12px;
+	margin-top: 8px;
+	display: block;
+}
+
+/* Sync Indicator (optional visual feedback) */
+.wcsp-syncing {
+	position: relative;
+}
+
+.wcsp-syncing::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 4px;
+	height: 100%;
+	background: #2271b1;
+	animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%, 100% {
+		opacity: 0.3;
+	}
+	50% {
+		opacity: 1;
+	}
 }
 
 /* Responsive Adjustments */
