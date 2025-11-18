@@ -32,11 +32,11 @@ if ( ! defined( 'WPINC' ) ) {
 	<!-- Chart Configuration -->
 		<div class="wcsp-gui-section">
 			<h4><?php esc_html_e( 'Chart Data', 'wp-chart-sip' ); ?></h4>
-			<p class="description"><?php esc_html_e( 'Add your data series and labels below. No coding required!', 'wp-chart-sip' ); ?></p>
+			<p class="description" id="wcsp-data-description"><?php esc_html_e( 'Add your data series and labels below. No coding required!', 'wp-chart-sip' ); ?></p>
 
-			<!-- Data Series -->
-			<div class="wcsp-field">
-				<label><strong><?php esc_html_e( 'Data Series:', 'wp-chart-sip' ); ?></strong></label>
+			<!-- Data Series Container -->
+			<div class="wcsp-field" id="wcsp-series-field">
+				<label><strong id="wcsp-series-label"><?php esc_html_e( 'Data Series:', 'wp-chart-sip' ); ?></strong></label>
 				<div id="wcsp-series-container">
 					<!-- Series will be added here by JavaScript -->
 				</div>
@@ -47,12 +47,12 @@ if ( ! defined( 'WPINC' ) ) {
 			</div>
 
 			<!-- Categories/Labels -->
-			<div class="wcsp-field">
+			<div class="wcsp-field" id="wcsp-categories-field">
 				<label for="wcsp-gui-categories">
-					<strong><?php esc_html_e( 'Labels (Categories):', 'wp-chart-sip' ); ?></strong>
+					<strong id="wcsp-categories-label"><?php esc_html_e( 'Labels (Categories):', 'wp-chart-sip' ); ?></strong>
 				</label>
 				<input type="text" id="wcsp-gui-categories" class="widefat" placeholder="Jan, Feb, Mar, Apr, May, Jun">
-				<p class="description"><?php esc_html_e( 'Enter labels separated by commas (for line, bar, area charts) or leave empty for pie/donut charts.', 'wp-chart-sip' ); ?></p>
+				<p class="description" id="wcsp-categories-description"><?php esc_html_e( 'Enter labels separated by commas.', 'wp-chart-sip' ); ?></p>
 			</div>
 		</div>
 

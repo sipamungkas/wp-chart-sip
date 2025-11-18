@@ -11,6 +11,90 @@
 	// Debounce timer for sync operations
 	var guiToJsonTimer = null;
 
+	// Chart type configurations
+	var chartTypeConfigs = {
+		'line': {
+			dataType: 'standard', // name + data array
+			needsCategories: true,
+			seriesLabel: 'Data Series:',
+			categoriesLabel: 'X-Axis Labels:',
+			categoriesPlaceholder: 'Jan, Feb, Mar, Apr, May, Jun',
+			dataPlaceholder: '30, 40, 35, 50, 49, 60',
+			description: 'Add series with names and numeric values. Each series will be a line on the chart.',
+			allowMultipleSeries: true
+		},
+		'bar': {
+			dataType: 'standard',
+			needsCategories: true,
+			seriesLabel: 'Data Series:',
+			categoriesLabel: 'X-Axis Categories:',
+			categoriesPlaceholder: 'Product A, Product B, Product C',
+			dataPlaceholder: '30, 40, 35, 50, 49, 60',
+			description: 'Add series with names and numeric values. Each series will be a set of bars.',
+			allowMultipleSeries: true
+		},
+		'area': {
+			dataType: 'standard',
+			needsCategories: true,
+			seriesLabel: 'Data Series:',
+			categoriesLabel: 'X-Axis Labels:',
+			categoriesPlaceholder: 'Jan, Feb, Mar, Apr, May, Jun',
+			dataPlaceholder: '30, 40, 35, 50, 49, 60',
+			description: 'Add series with names and numeric values. Each series will be an area on the chart.',
+			allowMultipleSeries: true
+		},
+		'radar': {
+			dataType: 'standard',
+			needsCategories: true,
+			seriesLabel: 'Data Series:',
+			categoriesLabel: 'Axis Labels:',
+			categoriesPlaceholder: 'Speed, Strength, Intelligence, Magic, Defense',
+			dataPlaceholder: '80, 50, 30, 40, 100',
+			description: 'Add series with names and numeric values for each axis.',
+			allowMultipleSeries: true
+		},
+		'pie': {
+			dataType: 'pie', // flat array
+			needsCategories: true,
+			seriesLabel: 'Slice Values:',
+			categoriesLabel: 'Slice Labels:',
+			categoriesPlaceholder: 'Team A, Team B, Team C, Team D',
+			dataPlaceholder: '44, 55, 13, 33',
+			description: 'Enter numeric values for each slice and their corresponding labels.',
+			allowMultipleSeries: false
+		},
+		'donut': {
+			dataType: 'pie',
+			needsCategories: true,
+			seriesLabel: 'Slice Values:',
+			categoriesLabel: 'Slice Labels:',
+			categoriesPlaceholder: 'Team A, Team B, Team C, Team D',
+			dataPlaceholder: '44, 55, 13, 33',
+			description: 'Enter numeric values for each slice and their corresponding labels.',
+			allowMultipleSeries: false
+		},
+		'scatter': {
+			dataType: 'scatter', // [x, y] pairs
+			needsCategories: false,
+			seriesLabel: 'Data Series:',
+			categoriesLabel: '',
+			categoriesPlaceholder: '',
+			dataPlaceholder: '16.4,5.4; 21.7,2; 25.4,3; 19,2',
+			description: 'Enter X,Y coordinate pairs separated by semicolons (e.g., "16.4,5.4; 21.7,2; 25.4,3").',
+			allowMultipleSeries: true
+		},
+		'heatmap': {
+			dataType: 'heatmap', // {x, y} objects
+			needsCategories: false,
+			seriesLabel: 'Data Series:',
+			categoriesLabel: '',
+			categoriesPlaceholder: '',
+			dataPlaceholder: 'W1,22; W2,29; W3,13; W4,32',
+			description: 'Enter X-label,Y-value pairs separated by semicolons (e.g., "W1,22; W2,29; W3,13").',
+			allowMultipleSeries: true
+		}
+	};
+
 	$(document).ready(function() {
 		// Chart preview functionality
 		$('#wcsp_preview_chart').on('click', function(e) {
@@ -314,22 +398,36 @@
 	var seriesCounter = 0;
 	function addSeriesRow(name, data) {
 		seriesCounter++;
+		var chartType = $('#wcsp_chart_type').val();
+		var config = chartTypeConfigs[chartType] || chartTypeConfigs['line'];
+
 		// Use timestamp-based unique index to avoid conflicts
 		var uniqueIndex = 'series_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 		name = name || 'Series ' + seriesCounter;
 		data = data || '';
 
 		var html = '<div class="wcsp-series-row" data-index="' + uniqueIndex + '">' +
-			'<div class="wcsp-series-fields">' +
-			'<div class="wcsp-series-field">' +
-			'<label>Series Name:</label>' +
-			'<input type="text" class="wcsp-series-name" value="' + escapeHtml(name) + '" placeholder="e.g., Sales">' +
-			'</div>' +
-			'<div class="wcsp-series-field wcsp-series-data-field">' +
-			'<label>Data Values:</label>' +
-			'<input type="text" class="wcsp-series-data" value="' + escapeHtml(data) + '" placeholder="e.g., 30, 40, 35, 50, 49, 60">' +
-			'</div>' +
-			'<button type="button" class="button wcsp-remove-series" title="Remove Series">' +
+			'<div class="wcsp-series-fields">';
+
+		// For pie/donut charts, don't show series name field
+		if (config.dataType === 'pie') {
+			html += '<div class="wcsp-series-field wcsp-series-data-field">' +
+				'<label>Slice Values:</label>' +
+				'<input type="text" class="wcsp-series-data" value="' + escapeHtml(data) + '" placeholder="' + escapeHtml(config.dataPlaceholder) + '">' +
+				'</div>';
+		} else {
+			// For all other charts, show both name and data fields
+			html += '<div class="wcsp-series-field">' +
+				'<label>Series Name:</label>' +
+				'<input type="text" class="wcsp-series-name" value="' + escapeHtml(name) + '" placeholder="e.g., Sales">' +
+				'</div>' +
+				'<div class="wcsp-series-field wcsp-series-data-field">' +
+				'<label>Data Values:</label>' +
+				'<input type="text" class="wcsp-series-data" value="' + escapeHtml(data) + '" placeholder="' + escapeHtml(config.dataPlaceholder) + '">' +
+				'</div>';
+		}
+
+		html += '<button type="button" class="button wcsp-remove-series" title="Remove Series">' +
 			'<span class="dashicons dashicons-no-alt"></span>' +
 			'</button>' +
 			'</div>' +
@@ -354,6 +452,7 @@
 	 */
 	function convertGuiToJson() {
 		var chartType = $('#wcsp_chart_type').val();
+		var config = chartTypeConfigs[chartType] || chartTypeConfigs['line'];
 		var series = [];
 		var categories = [];
 		var labels = [];
@@ -361,17 +460,14 @@
 		// Clear previous validation errors
 		clearValidationErrors();
 
-		// Get series data
-		if (chartType === 'pie' || chartType === 'donut') {
+		// Get series data based on chart type
+		if (config.dataType === 'pie') {
 			// For pie/donut charts, series is a flat array of numbers
 			var allDataValues = [];
 			$('.wcsp-series-row').each(function() {
 				var $dataField = $(this).find('.wcsp-series-data');
 				var dataStr = $dataField.val().trim();
 				if (dataStr) {
-					// Validate data
-					validateNumericData(dataStr, $dataField);
-
 					// Parse data values and add to flat array
 					var dataValues = dataStr.split(',').map(function(v) {
 						var num = parseFloat(v.trim());
@@ -381,17 +477,72 @@
 				}
 			});
 			series = allDataValues;
-		} else {
-			// For other charts, series is an array of objects with name and data
+		} else if (config.dataType === 'scatter') {
+			// For scatter charts, series contains [x, y] coordinate pairs
 			$('.wcsp-series-row').each(function() {
 				var name = $(this).find('.wcsp-series-name').val().trim();
 				var $dataField = $(this).find('.wcsp-series-data');
 				var dataStr = $dataField.val().trim();
 
 				if (dataStr) {
-					// Validate data
-					validateNumericData(dataStr, $dataField);
+					// Parse X,Y pairs separated by semicolons
+					// Format: "16.4,5.4; 21.7,2; 25.4,3; 19,2"
+					var dataValues = [];
+					var pairs = dataStr.split(';');
+					pairs.forEach(function(pair) {
+						var coords = pair.trim().split(',');
+						if (coords.length === 2) {
+							var x = parseFloat(coords[0].trim());
+							var y = parseFloat(coords[1].trim());
+							if (!isNaN(x) && !isNaN(y)) {
+								dataValues.push([x, y]);
+							}
+						}
+					});
 
+					series.push({
+						name: name || 'Series',
+						data: dataValues
+					});
+				}
+			});
+		} else if (config.dataType === 'heatmap') {
+			// For heatmap, series contains {x, y} objects
+			$('.wcsp-series-row').each(function() {
+				var name = $(this).find('.wcsp-series-name').val().trim();
+				var $dataField = $(this).find('.wcsp-series-data');
+				var dataStr = $dataField.val().trim();
+
+				if (dataStr) {
+					// Parse X-label,Y-value pairs separated by semicolons
+					// Format: "W1,22; W2,29; W3,13; W4,32"
+					var dataValues = [];
+					var pairs = dataStr.split(';');
+					pairs.forEach(function(pair) {
+						var parts = pair.trim().split(',');
+						if (parts.length === 2) {
+							var x = parts[0].trim();
+							var y = parseFloat(parts[1].trim());
+							if (x && !isNaN(y)) {
+								dataValues.push({ x: x, y: y });
+							}
+						}
+					});
+
+					series.push({
+						name: name || 'Series',
+						data: dataValues
+					});
+				}
+			});
+		} else {
+			// For standard charts (line, bar, area, radar), series is an array of objects with name and data
+			$('.wcsp-series-row').each(function() {
+				var name = $(this).find('.wcsp-series-name').val().trim();
+				var $dataField = $(this).find('.wcsp-series-data');
+				var dataStr = $dataField.val().trim();
+
+				if (dataStr) {
 					// Parse data values
 					var dataValues = dataStr.split(',').map(function(v) {
 						var num = parseFloat(v.trim());
@@ -406,13 +557,15 @@
 			});
 		}
 
-		// Get categories/labels
-		var categoriesStr = $('#wcsp-gui-categories').val().trim();
-		if (categoriesStr) {
-			if (chartType === 'pie' || chartType === 'donut') {
-				labels = categoriesStr.split(',').map(function(v) { return v.trim(); });
-			} else {
-				categories = categoriesStr.split(',').map(function(v) { return v.trim(); });
+		// Get categories/labels if needed
+		if (config.needsCategories) {
+			var categoriesStr = $('#wcsp-gui-categories').val().trim();
+			if (categoriesStr) {
+				if (config.dataType === 'pie') {
+					labels = categoriesStr.split(',').map(function(v) { return v.trim(); });
+				} else {
+					categories = categoriesStr.split(',').map(function(v) { return v.trim(); });
+				}
 			}
 		}
 
@@ -471,6 +624,7 @@
 			var data = JSON.parse(chartData);
 			var options = chartOptions ? JSON.parse(chartOptions) : {};
 			var chartType = $('#wcsp_chart_type').val();
+			var config = chartTypeConfigs[chartType] || chartTypeConfigs['line'];
 
 			// Validate data structure
 			if (!data.series) {
@@ -483,22 +637,59 @@
 
 			// Clear existing series
 			$('#wcsp-series-container').empty();
-			// Note: seriesCounter is NOT reset - we use timestamp-based indices now
 
-			// Load series
+			// Load series based on chart type
 			if (data.series && data.series.length > 0) {
-				if (chartType === 'pie' || chartType === 'donut') {
+				if (config.dataType === 'pie') {
 					// For pie/donut, series is a flat array of numbers
-					// data.series = [44, 55, 13, 33]
 					if (Array.isArray(data.series) && typeof data.series[0] === 'number') {
 						addSeriesRow('Values', data.series.join(', '));
 					} else {
-						// Fallback for unexpected format
 						console.warn('Unexpected series format for pie/donut chart');
 						addSeriesRow('Values', '');
 					}
+				} else if (config.dataType === 'scatter') {
+					// For scatter charts, series contains [x, y] pairs
+					if (Array.isArray(data.series)) {
+						data.series.forEach(function(seriesItem) {
+							if (seriesItem && typeof seriesItem === 'object') {
+								var name = seriesItem.name || 'Series';
+								// Convert [[x1, y1], [x2, y2]] to "x1,y1; x2,y2"
+								var dataStr = '';
+								if (Array.isArray(seriesItem.data)) {
+									dataStr = seriesItem.data.map(function(pair) {
+										if (Array.isArray(pair) && pair.length === 2) {
+											return pair[0] + ',' + pair[1];
+										}
+										return '';
+									}).filter(function(s) { return s; }).join('; ');
+								}
+								addSeriesRow(name, dataStr);
+							}
+						});
+					}
+				} else if (config.dataType === 'heatmap') {
+					// For heatmap, series contains {x, y} objects
+					if (Array.isArray(data.series)) {
+						data.series.forEach(function(seriesItem) {
+							if (seriesItem && typeof seriesItem === 'object') {
+								var name = seriesItem.name || 'Series';
+								// Convert [{x: 'W1', y: 22}, {x: 'W2', y: 29}] to "W1,22; W2,29"
+								var dataStr = '';
+								if (Array.isArray(seriesItem.data)) {
+									dataStr = seriesItem.data.map(function(obj) {
+										if (obj && typeof obj === 'object' && 'x' in obj && 'y' in obj) {
+											return obj.x + ',' + obj.y;
+										}
+										return '';
+									}).filter(function(s) { return s; }).join('; ');
+								}
+								addSeriesRow(name, dataStr);
+							}
+						});
+					}
 				} else {
-					// For other charts, series is an array of objects with name and data
+					// For standard charts (line, bar, area, radar)
 					if (Array.isArray(data.series)) {
 						data.series.forEach(function(seriesItem) {
 							if (seriesItem && typeof seriesItem === 'object') {
@@ -568,8 +759,58 @@
 		}
 
 		// Update UI based on current chart type
-		updateSeriesControls();
-		updateCategoriesLabel();
+		updateUiForChartType();
+	}
+
+	/**
+	 * Update UI elements based on selected chart type
+	 */
+	function updateUiForChartType() {
+		var chartType = $('#wcsp_chart_type').val();
+		var config = chartTypeConfigs[chartType] || chartTypeConfigs['line'];
+
+		// Update description
+		$('#wcsp-data-description').text(config.description);
+
+		// Update series label
+		$('#wcsp-series-label').text(config.seriesLabel);
+
+		// Update categories field visibility and label
+		if (config.needsCategories) {
+			$('#wcsp-categories-field').show();
+			$('#wcsp-categories-label').text(config.categoriesLabel);
+			$('#wcsp-gui-categories').attr('placeholder', config.categoriesPlaceholder);
+			$('#wcsp-categories-description').text('Enter labels separated by commas.');
+		} else {
+			$('#wcsp-categories-field').hide();
+		}
+
+		// Update add series button state
+		var $addButton = $('#wcsp-add-series');
+		if (config.allowMultipleSeries) {
+			$addButton.prop('disabled', false);
+			$addButton.removeClass('wcsp-disabled');
+			$addButton.removeAttr('title');
+		} else {
+			$addButton.prop('disabled', true);
+			$addButton.addClass('wcsp-disabled');
+			$addButton.attr('title', 'This chart type only supports a single data series');
+
+			// Ensure only one series row exists for pie/donut
+			if ($('.wcsp-series-row').length > 1) {
+				var allData = [];
+				$('.wcsp-series-row').each(function() {
+					var dataStr = $(this).find('.wcsp-series-data').val().trim();
+					if (dataStr) {
+						var values = dataStr.split(',').map(function(v) { return v.trim(); });
+						allData = allData.concat(values);
+					}
+				});
+				$('#wcsp-series-container').empty();
+				seriesCounter = 0;
+				addSeriesRow('Values', allData.join(', '));
+			}
+		}
 	}
 
 	/**
@@ -588,57 +829,20 @@
 	function handleChartTypeChange() {
 		var newChartType = $('#wcsp_chart_type').val();
 		var oldChartData = $('#wcsp_chart_data').val().trim();
+		var newConfig = chartTypeConfigs[newChartType] || chartTypeConfigs['line'];
 
 		// Update UI controls and labels
-		updateSeriesControls();
-		updateCategoriesLabel();
+		updateUiForChartType();
 
 		// If we have existing data, restructure it for the new chart type
 		if (oldChartData) {
 			try {
 				var data = JSON.parse(oldChartData);
-				var isPieOrDonut = (newChartType === 'pie' || newChartType === 'donut');
-				var wasPieOrDonut = Array.isArray(data.series) && typeof data.series[0] === 'number';
+				var oldDataType = detectDataType(data);
 
-				// Restructure if switching between pie/donut and other types
-				if (isPieOrDonut && !wasPieOrDonut) {
-					// Converting TO pie/donut from other chart type
-					// Flatten all series data into one array
-					var flatData = [];
-					if (Array.isArray(data.series)) {
-						data.series.forEach(function(series) {
-							if (Array.isArray(series.data)) {
-								flatData = flatData.concat(series.data);
-							}
-						});
-					}
-					data.series = flatData;
-
-					// Convert categories to labels
-					if (data.categories) {
-						data.labels = data.categories;
-						delete data.categories;
-					}
-
-					$('#wcsp_chart_data').val(JSON.stringify(data, null, 2));
-				} else if (!isPieOrDonut && wasPieOrDonut) {
-					// Converting FROM pie/donut to other chart type
-					// Convert flat array to series with objects
-					var seriesData = [];
-					if (Array.isArray(data.series)) {
-						seriesData.push({
-							name: 'Series 1',
-							data: data.series
-						});
-					}
-					data.series = seriesData;
-
-					// Convert labels to categories
-					if (data.labels) {
-						data.categories = data.labels;
-						delete data.labels;
-					}
-
+				// Restructure data if switching between different data types
+				if (oldDataType !== newConfig.dataType) {
+					data = convertDataStructure(data, oldDataType, newConfig.dataType);
 					$('#wcsp_chart_data').val(JSON.stringify(data, null, 2));
 				}
 
@@ -654,61 +858,89 @@
 	}
 
 	/**
-	 * Update series controls based on chart type
+	 * Detect the data type from existing data structure
 	 */
-	function updateSeriesControls() {
-		var chartType = $('#wcsp_chart_type').val();
-		var isPieOrDonut = (chartType === 'pie' || chartType === 'donut');
-		var $addButton = $('#wcsp-add-series');
-
-		if (isPieOrDonut) {
-			// Disable add series button for pie/donut
-			$addButton.prop('disabled', true);
-			$addButton.attr('title', 'Pie and donut charts use a single data series');
-			$addButton.addClass('wcsp-disabled');
-
-			// Ensure only one series row exists
-			if ($('.wcsp-series-row').length > 1) {
-				// Merge all series data into first row
-				var allData = [];
-				$('.wcsp-series-row').each(function() {
-					var dataStr = $(this).find('.wcsp-series-data').val().trim();
-					if (dataStr) {
-						var values = dataStr.split(',').map(function(v) { return v.trim(); });
-						allData = allData.concat(values);
-					}
-				});
-
-				// Clear container and add one row with merged data
-				$('#wcsp-series-container').empty();
-				seriesCounter = 0;
-				addSeriesRow('Values', allData.join(', '));
-			}
-		} else {
-			// Enable add series button for other charts
-			$addButton.prop('disabled', false);
-			$addButton.removeAttr('title');
-			$addButton.removeClass('wcsp-disabled');
+	function detectDataType(data) {
+		if (!data.series || !Array.isArray(data.series) || data.series.length === 0) {
+			return 'standard';
 		}
+
+		var firstItem = data.series[0];
+
+		// Check if it's a flat array (pie/donut)
+		if (typeof firstItem === 'number') {
+			return 'pie';
+		}
+
+		// Check if it's an object with data property
+		if (typeof firstItem === 'object' && firstItem.data) {
+			var firstDataItem = firstItem.data[0];
+
+			// Check for scatter data [x, y]
+			if (Array.isArray(firstDataItem) && firstDataItem.length === 2) {
+				return 'scatter';
+			}
+
+			// Check for heatmap data {x, y}
+			if (typeof firstDataItem === 'object' && 'x' in firstDataItem && 'y' in firstDataItem) {
+				return 'heatmap';
+			}
+
+			// Standard data (numbers)
+			return 'standard';
+		}
+
+		return 'standard';
 	}
 
 	/**
-	 * Update categories/labels field label based on chart type
+	 * Convert data structure from one type to another
 	 */
-	function updateCategoriesLabel() {
-		var chartType = $('#wcsp_chart_type').val();
-		var isPieOrDonut = (chartType === 'pie' || chartType === 'donut');
-		var $label = $('label[for="wcsp-gui-categories"] strong');
-		var $field = $('#wcsp-gui-categories');
+	function convertDataStructure(data, fromType, toType) {
+		var newData = { series: [] };
 
-		if (isPieOrDonut) {
-			$label.text('Slice Labels:');
-			$field.attr('placeholder', 'Q1, Q2, Q3, Q4');
+		if (fromType === 'pie' && toType !== 'pie') {
+			// Converting FROM pie to other types
+			if (Array.isArray(data.series)) {
+				newData.series.push({
+					name: 'Series 1',
+					data: data.series
+				});
+			}
+			if (data.labels) {
+				newData.categories = data.labels;
+			}
+		} else if (fromType !== 'pie' && toType === 'pie') {
+			// Converting TO pie from other types
+			var flatData = [];
+			if (Array.isArray(data.series)) {
+				data.series.forEach(function(series) {
+					if (series.data && Array.isArray(series.data)) {
+						// Extract just numeric values
+						series.data.forEach(function(item) {
+							if (typeof item === 'number') {
+								flatData.push(item);
+							} else if (Array.isArray(item) && item.length > 0) {
+								flatData.push(typeof item[0] === 'number' ? item[0] : item[1]);
+							} else if (typeof item === 'object' && 'y' in item) {
+								flatData.push(item.y);
+							}
+						});
+					}
+				});
+			}
+			newData.series = flatData;
+			if (data.categories) {
+				newData.labels = data.categories;
+			}
 		} else {
-			$label.text('X-Axis Categories:');
-			$field.attr('placeholder', 'Jan, Feb, Mar, Apr, May, Jun');
+			// Same type or standard conversions
+			newData = data;
 		}
+
+		return newData;
 	}
+
 
 	/**
 	 * Validate numeric data and show feedback

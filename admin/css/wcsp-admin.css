@@ -360,6 +360,74 @@
 	}
 }
 
+/* Chart Type Specific Styling */
+.wcsp-field {
+	transition: opacity 0.2s ease, height 0.2s ease;
+}
+
+.wcsp-field:not([style*="display: none"]) {
+	opacity: 1;
+}
+
+/* Smooth transitions for dynamic UI changes */
+#wcsp-data-description,
+#wcsp-series-label,
+#wcsp-categories-label {
+	transition: all 0.2s ease;
+}
+
+/* Visual indicator for different chart types */
+.wcsp-series-row {
+	position: relative;
+	transition: all 0.2s ease;
+}
+
+/* Single series mode (pie/donut) */
+.wcsp-series-row.wcsp-single-series {
+	border-left: 4px solid #2271b1;
+}
+
+/* Scatter/Heatmap data field styling */
+.wcsp-series-data-field input[placeholder*=";"]:focus {
+	border-color: #8A2BE2;
+	box-shadow: 0 0 0 1px #8A2BE2;
+}
+
+/* Help text styling */
+.wcsp-field .description {
+	transition: opacity 0.2s ease;
+}
+
+/* Color Template Preview */
+#wcsp-template-preview {
+	margin-top: 10px;
+	padding: 10px;
+	background: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+.wcsp-color-swatches {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.wcsp-color-swatch {
+	width: 40px;
+	height: 40px;
+	border-radius: 4px;
+	border: 2px solid #fff;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	cursor: pointer;
+	transition: transform 0.2s ease;
+}
+
+.wcsp-color-swatch:hover {
+	transform: scale(1.1);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Responsive Adjustments */
 @media (max-width: 782px) {
 	.wcsp-series-fields {
