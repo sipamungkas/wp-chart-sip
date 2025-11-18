@@ -344,6 +344,41 @@
 	margin: 10px 0;
 }
 
+/* Color Template Selector */
+#wcsp-color-template {
+	margin-bottom: 10px;
+}
+
+#wcsp-template-preview {
+	background: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 12px;
+}
+
+.wcsp-color-swatches {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.wcsp-color-swatch {
+	width: 40px;
+	height: 40px;
+	border-radius: 4px;
+	border: 2px solid #fff;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	cursor: pointer;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	display: inline-block;
+}
+
+.wcsp-color-swatch:hover {
+	transform: scale(1.1);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	border-color: #2271b1;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 782px) {
 	.wcsp-series-fields {
@@ -372,5 +407,10 @@
 	.wcsp-tab-button.active {
 		border-left-color: #2271b1;
 		border-bottom-color: #ddd;
+	}
+
+	.wcsp-color-swatch {
+		width: 32px;
+		height: 32px;
 	}
 }

@@ -80,13 +80,44 @@ if ( ! defined( 'WPINC' ) ) {
 				<input type="text" id="wcsp-gui-title" class="widefat" placeholder="My Chart Title">
 			</div>
 
-			<!-- Colors -->
+			<!-- Color Template Selector -->
+			<div class="wcsp-field">
+				<label for="wcsp-color-template">
+					<strong><?php esc_html_e( 'Color Template:', 'wp-chart-sip' ); ?></strong>
+				</label>
+				<select id="wcsp-color-template" class="widefat">
+					<option value=""><?php esc_html_e( 'Choose a color template...', 'wp-chart-sip' ); ?></option>
+					<?php
+					$templates_by_category = WCSP_Color_Templates::get_templates_by_category();
+					$category_labels = WCSP_Color_Templates::get_category_labels();
+
+					foreach ( $templates_by_category as $category => $templates ) :
+						if ( empty( $templates ) ) continue;
+						$category_label = isset( $category_labels[ $category ] ) ? $category_labels[ $category ] : $category;
+						?>
+						<optgroup label="<?php echo esc_attr( $category_label ); ?>">
+							<?php foreach ( $templates as $template_id => $template ) : ?>
+								<option value="<?php echo esc_attr( $template_id ); ?>"
+									data-colors='<?php echo esc_attr( wp_json_encode( $template['colors'] ) ); ?>'>
+									<?php echo esc_html( $template['name'] ); ?> - <?php echo esc_html( $template['description'] ); ?>
+								</option>
+							<?php endforeach; ?>
+						</optgroup>
+					<?php endforeach; ?>
+				</select>
+				<div id="wcsp-template-preview" style="margin-top: 10px; display: none;">
+					<div class="wcsp-color-swatches"></div>
+				</div>
+				<p class="description"><?php esc_html_e( 'Select a predefined color template or manually enter colors below.', 'wp-chart-sip' ); ?></p>
+			</div>
+
+			<!-- Manual Colors -->
 			<div class="wcsp-field">
 				<label for="wcsp-gui-colors">
-					<strong><?php esc_html_e( 'Colors:', 'wp-chart-sip' ); ?></strong>
+					<strong><?php esc_html_e( 'Custom Colors:', 'wp-chart-sip' ); ?></strong>
 				</label>
 				<input type="text" id="wcsp-gui-colors" class="widefat" placeholder="#008FFB, #00E396, #FEB019">
-				<p class="description"><?php esc_html_e( 'Enter colors separated by commas (hex codes or color names).', 'wp-chart-sip' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Enter colors separated by commas (hex codes or color names), or use a template above.', 'wp-chart-sip' ); ?></p>
 			</div>
 
 			<!-- Chart Height -->
