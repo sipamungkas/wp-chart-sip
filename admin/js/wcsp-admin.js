@@ -8,18 +8,15 @@
 	// Store chart instance globally to manage it properly
 	var chartInstance = null;
 
-	// Debounce timers for sync operations
+	// Debounce timer for sync operations
 	var guiToJsonTimer = null;
-	var jsonToGuiTimer = null;
 
 	$(document).ready(function() {
 		// Chart preview functionality
 		$('#wcsp_preview_chart').on('click', function(e) {
 			e.preventDefault();
-			// Convert GUI to JSON first if in GUI mode
-			if ($('#wcsp-tab-gui').hasClass('active')) {
-				convertGuiToJson();
-			}
+			// Convert GUI to JSON first
+			convertGuiToJson();
 			previewChart();
 		});
 
@@ -29,56 +26,9 @@
 			showChartSelectionModal();
 		});
 
-		// Auto-format JSON on blur
-		$('#wcsp_chart_data, #wcsp_chart_options').on('blur', function() {
-			try {
-				var jsonText = $(this).val().trim();
-				if (jsonText) {
-					var formatted = JSON.stringify(JSON.parse(jsonText), null, 2);
-					$(this).val(formatted);
-				}
-			} catch (e) {
-				// Invalid JSON, don't format
-			}
-		});
-
-		// Real-time JSON → GUI sync (debounced)
-		$('#wcsp_chart_data, #wcsp_chart_options').on('input', function() {
-			// Only sync to GUI if JSON tab is active
-			if ($('#wcsp-tab-json').hasClass('active')) {
-				debouncedLoadJsonToGui();
-			}
-		});
-
 		// Chart type change handler - trigger immediate sync
 		$('#wcsp_chart_type').on('change', function() {
 			handleChartTypeChange();
-		});
-
-		// Tab switching functionality with bidirectional sync
-		$('.wcsp-tab-button').on('click', function() {
-			var currentTab = $('.wcsp-tab-button.active').data('tab');
-			var newTab = $(this).data('tab');
-
-			// Don't do anything if clicking the same tab
-			if (currentTab === newTab) {
-				return;
-			}
-
-			// Sync data when switching tabs
-			if (currentTab === 'gui' && newTab === 'json') {
-				// Switching from GUI to JSON - convert GUI to JSON
-				convertGuiToJson();
-			} else if (currentTab === 'json' && newTab === 'gui') {
-				// Switching from JSON to GUI - load JSON into GUI
-				loadJsonToGui();
-			}
-
-			// Update active states
-			$('.wcsp-tab-button').removeClass('active');
-			$(this).addClass('active');
-			$('.wcsp-tab-content').removeClass('active');
-			$('#wcsp-tab-' + newTab).addClass('active');
 		});
 
 		// Add series button
@@ -91,14 +41,10 @@
 
 		// Real-time GUI → JSON sync (debounced) - Use event delegation
 		$('#wcsp-series-container').on('input change', '.wcsp-series-name, .wcsp-series-data', function() {
-			if ($('#wcsp-tab-gui').hasClass('active')) {
-				debouncedConvertGuiToJson();
-			}
+			debouncedConvertGuiToJson();
 		});
 		$('#wcsp-gui-categories, #wcsp-gui-title, #wcsp-gui-colors, #wcsp-gui-height').on('input change', function() {
-			if ($('#wcsp-tab-gui').hasClass('active')) {
-				debouncedConvertGuiToJson();
-			}
+			debouncedConvertGuiToJson();
 		});
 
 		// Convert GUI to JSON before saving (always sync regardless of active tab)
@@ -396,9 +342,7 @@
 			if ($('.wcsp-series-row').length > 1) {
 				$(this).closest('.wcsp-series-row').remove();
 				// Trigger sync after removal
-				if ($('#wcsp-tab-gui').hasClass('active')) {
-					debouncedConvertGuiToJson();
-				}
+				debouncedConvertGuiToJson();
 			} else {
 				alert('You must have at least one data series.');
 			}
@@ -635,16 +579,6 @@
 		clearTimeout(guiToJsonTimer);
 		guiToJsonTimer = setTimeout(function() {
 			convertGuiToJson();
-		}, 500);
-	}
-
-	/**
-	 * Debounced JSON to GUI loading
-	 */
-	function debouncedLoadJsonToGui() {
-		clearTimeout(jsonToGuiTimer);
-		jsonToGuiTimer = setTimeout(function() {
-			loadJsonToGui();
 		}, 500);
 	}
 
