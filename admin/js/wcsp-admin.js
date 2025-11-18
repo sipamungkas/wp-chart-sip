@@ -12,6 +12,10 @@
 		// Chart preview functionality
 		$('#wcsp_preview_chart').on('click', function(e) {
 			e.preventDefault();
+			// Convert GUI to JSON first if in GUI mode
+			if ($('#wcsp-tab-gui').hasClass('active')) {
+				convertGuiToJson();
+			}
 			previewChart();
 		});
 
@@ -34,13 +38,30 @@
 			}
 		});
 
-		// Tab switching functionality
+		// Tab switching functionality with bidirectional sync
 		$('.wcsp-tab-button').on('click', function() {
-			var tab = $(this).data('tab');
+			var currentTab = $('.wcsp-tab-button.active').data('tab');
+			var newTab = $(this).data('tab');
+
+			// Don't do anything if clicking the same tab
+			if (currentTab === newTab) {
+				return;
+			}
+
+			// Sync data when switching tabs
+			if (currentTab === 'gui' && newTab === 'json') {
+				// Switching from GUI to JSON - convert GUI to JSON
+				convertGuiToJson();
+			} else if (currentTab === 'json' && newTab === 'gui') {
+				// Switching from JSON to GUI - load JSON into GUI
+				loadJsonToGui();
+			}
+
+			// Update active states
 			$('.wcsp-tab-button').removeClass('active');
 			$(this).addClass('active');
 			$('.wcsp-tab-content').removeClass('active');
-			$('#wcsp-tab-' + tab).addClass('active');
+			$('#wcsp-tab-' + newTab).addClass('active');
 		});
 
 		// Add series button
@@ -54,13 +75,6 @@
 			// Try to load existing JSON data into GUI
 			loadJsonToGui();
 		}
-
-		// Convert GUI to JSON before preview in GUI mode
-		$('#wcsp_preview_chart').on('click', function() {
-			if ($('#wcsp-tab-gui').hasClass('active')) {
-				convertGuiToJson();
-			}
-		});
 
 		// Convert GUI to JSON before saving
 		$('form#post').on('submit', function() {
@@ -341,28 +355,41 @@
 		var labels = [];
 
 		// Get series data
-		$('.wcsp-series-row').each(function() {
-			var name = $(this).find('.wcsp-series-name').val().trim();
-			var dataStr = $(this).find('.wcsp-series-data').val().trim();
+		if (chartType === 'pie' || chartType === 'donut') {
+			// For pie/donut charts, series is a flat array of numbers
+			var allDataValues = [];
+			$('.wcsp-series-row').each(function() {
+				var dataStr = $(this).find('.wcsp-series-data').val().trim();
+				if (dataStr) {
+					// Parse data values and add to flat array
+					var dataValues = dataStr.split(',').map(function(v) {
+						var num = parseFloat(v.trim());
+						return isNaN(num) ? 0 : num;
+					});
+					allDataValues = allDataValues.concat(dataValues);
+				}
+			});
+			series = allDataValues;
+		} else {
+			// For other charts, series is an array of objects with name and data
+			$('.wcsp-series-row').each(function() {
+				var name = $(this).find('.wcsp-series-name').val().trim();
+				var dataStr = $(this).find('.wcsp-series-data').val().trim();
 
-			if (dataStr) {
-				// Parse data values
-				var dataValues = dataStr.split(',').map(function(v) {
-					var num = parseFloat(v.trim());
-					return isNaN(num) ? 0 : num;
-				});
+				if (dataStr) {
+					// Parse data values
+					var dataValues = dataStr.split(',').map(function(v) {
+						var num = parseFloat(v.trim());
+						return isNaN(num) ? 0 : num;
+					});
 
-				// For pie/donut charts, series format is different
-				if (chartType === 'pie' || chartType === 'donut') {
-					series.push(dataValues);
-				} else {
 					series.push({
 						name: name || 'Series',
 						data: dataValues
 					});
 				}
-			}
-		});
+			});
+		}
 
 		// Get categories/labels
 		var categoriesStr = $('#wcsp-gui-categories').val().trim();
@@ -430,21 +457,23 @@
 
 			// Load series
 			if (data.series && data.series.length > 0) {
-				data.series.forEach(function(seriesItem) {
-					if (chartType === 'pie' || chartType === 'donut') {
-						// For pie/donut, series is just an array of numbers
-						if (Array.isArray(seriesItem)) {
-							addSeriesRow('Values', seriesItem.join(', '));
-						} else {
-							addSeriesRow('Values', seriesItem);
-						}
+				if (chartType === 'pie' || chartType === 'donut') {
+					// For pie/donut, series is a flat array of numbers
+					// data.series = [44, 55, 13, 33]
+					if (Array.isArray(data.series) && typeof data.series[0] === 'number') {
+						addSeriesRow('Values', data.series.join(', '));
 					} else {
-						// For other charts, series has name and data
+						// Fallback for unexpected format
+						addSeriesRow('Values', '');
+					}
+				} else {
+					// For other charts, series is an array of objects with name and data
+					data.series.forEach(function(seriesItem) {
 						var name = seriesItem.name || 'Series';
 						var dataStr = Array.isArray(seriesItem.data) ? seriesItem.data.join(', ') : '';
 						addSeriesRow(name, dataStr);
-					}
-				});
+					});
+				}
 			}
 
 			// Load categories or labels
