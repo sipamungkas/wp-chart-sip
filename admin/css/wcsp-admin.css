@@ -344,6 +344,71 @@
 	margin: 10px 0;
 }
 
+/* Validation States */
+.wcsp-invalid {
+	border-color: #dc3232 !important;
+	background: #fff0f0 !important;
+	box-shadow: 0 0 0 1px #dc3232 !important;
+}
+
+.wcsp-validation-message {
+	display: block;
+	color: #dc3232;
+	font-size: 12px;
+	margin-top: 4px;
+	font-weight: 500;
+}
+
+/* Disabled States */
+#wcsp-add-series.wcsp-disabled,
+#wcsp-add-series:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	background: #f6f7f7;
+	border-color: #dcdcde;
+	color: #a7aaad;
+}
+
+#wcsp-add-series.wcsp-disabled:hover,
+#wcsp-add-series:disabled:hover {
+	background: #f6f7f7;
+	border-color: #dcdcde;
+	color: #a7aaad;
+}
+
+.wcsp-disabled-hint {
+	color: #666;
+	font-style: italic;
+	font-size: 12px;
+	margin-top: 8px;
+	display: block;
+}
+
+/* Sync Indicator (optional visual feedback) */
+.wcsp-syncing {
+	position: relative;
+}
+
+.wcsp-syncing::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 4px;
+	height: 100%;
+	background: #2271b1;
+	animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%, 100% {
+		opacity: 0.3;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+
 /* Responsive Adjustments */
 @media (max-width: 782px) {
 	.wcsp-series-fields {
