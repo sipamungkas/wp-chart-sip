@@ -438,4 +438,9 @@
 		border-left-color: #2271b1;
 		border-bottom-color: #ddd;
 	}
+
+	.wcsp-color-swatch {
+		width: 32px;
+		height: 32px;
+	}
 }

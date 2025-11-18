@@ -108,6 +108,34 @@
 				convertGuiToJson();
 			}
 		});
+
+		// Color template selector
+		$('#wcsp-color-template').on('change', function() {
+			var selectedOption = $(this).find('option:selected');
+			var colors = selectedOption.data('colors');
+
+			if (colors && colors.length > 0) {
+				// Update the color input field
+				$('#wcsp-gui-colors').val(colors.join(', '));
+
+				// Show template preview
+				showColorPreview(colors);
+			} else {
+				// Hide preview if no template selected
+				$('#wcsp-template-preview').hide();
+			}
+		});
+
+		// Show preview for manually entered colors
+		$('#wcsp-gui-colors').on('input blur', function() {
+			var colorsStr = $(this).val().trim();
+			if (colorsStr) {
+				var colors = colorsStr.split(',').map(function(c) { return c.trim(); });
+				showColorPreview(colors);
+			} else {
+				$('#wcsp-template-preview').hide();
+			}
+		});
 	});
 
 	/**
@@ -796,6 +824,24 @@
 			"'": '&#039;'
 		};
 		return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+	}
+
+	/**
+	 * Show color preview swatches
+	 */
+	function showColorPreview(colors) {
+		if (!colors || colors.length === 0) {
+			$('#wcsp-template-preview').hide();
+			return;
+		}
+
+		var swatchesHtml = '';
+		colors.forEach(function(color) {
+			swatchesHtml += '<span class="wcsp-color-swatch" style="background-color: ' + escapeHtml(color) + '" title="' + escapeHtml(color) + '"></span>';
+		});
+
+		$('#wcsp-template-preview .wcsp-color-swatches').html(swatchesHtml);
+		$('#wcsp-template-preview').show();
 	}
 
 })(jQuery);

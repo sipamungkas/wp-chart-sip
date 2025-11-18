@@ -51,6 +51,7 @@ register_deactivation_hook( __FILE__, 'wcsp_deactivate_plugin' );
  */
 require WCSP_PLUGIN_DIR . 'includes/class-wcsp-loader.php';
 require WCSP_PLUGIN_DIR . 'includes/class-wcsp-chart.php';
+require WCSP_PLUGIN_DIR . 'includes/class-wcsp-color-templates.php';
 require WCSP_PLUGIN_DIR . 'admin/class-wcsp-admin.php';
 require WCSP_PLUGIN_DIR . 'public/class-wcsp-public.php';
 
